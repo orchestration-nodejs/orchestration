@@ -1,0 +1,25 @@
+{
+  "name": "orchestration",
+  "version": "0.0.1",
+  "description": "Orchestration is a set of Gulp tasks that help you combine multiple Node.js microservices together into a versioned deployment.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RedpointGames/orchestration.git"
+  },
+  "keywords": [
+    "orchestration",
+    "microservices",
+    "gulp",
+    "versioning"
+  ],
+  "author": "Redpoint Games Pty Ltd",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/RedpointGames/orchestration/issues"
+  },
+  "homepage": "https://github.com/RedpointGames/orchestration#readme"
+}
