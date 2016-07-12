@@ -56,6 +56,18 @@ gulp.task('test-docker', ['build-docker'], function(callback) {
   )
 });
 
+// e.g. to deploy your Node.js app to a Kubernetes cluster in Google Cloud
+gulp.task('deploy', ['push-docker'], function(callback) {
+  orchestration.kubernetes.deployToCluster(
+    'project-name',
+    'us-central1-f',
+    'cluster-name',
+    'deployment-name',
+    'my-image-name',
+    orchestration.packaging.getVersion(),
+    callback
+  );
+});
 ```
 
 More functionality and examples coming soon.

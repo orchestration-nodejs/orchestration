@@ -4,4 +4,5 @@ module.exports = {
   versionless: require("./module/versionless"),
   docker: require("./module/docker"),
   node: require("./module/node"),
+  kubernetes: require("./module/kubernetes"),
 };
