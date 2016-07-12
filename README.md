@@ -11,7 +11,7 @@ Modules
 - `docker`: Utilities for building, pushing and testing Docker images.
 - `node`: Utilities for running Node.js test servers.
 - `packaging`: Utilities for obtaining information about the package to be deployed.
-- `swagger`: Utilities for interacting with (http://swagger.io/)[Swagger], the SDK generator.
+- `swagger`: Utilities for interacting with [Swagger](http://swagger.io/), the SDK generator.
 - `versionless`: Utilities for generating a versionless `package.json` file, for inclusion in Docker containers.
 
 Usage
