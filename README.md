@@ -23,7 +23,7 @@ You need to have `package.json` in your app (as you do for all Node.js modules).
 
 Create an `orchestration.json` file, which describes the files to include and the services that your application exposes:
 
-```json
+```javascript
 {
   "deployStore": {
     /* In future, other providers will be supported */
@@ -62,7 +62,7 @@ Create an `orchestration.json` file, which describes the files to include and th
 
 Create a `cluster.json` file, which describes your cluster on Google Cloud:
 
-```json
+```javascript
 {
   /* Type of deployment, only Kubernetes on Google Cloud is supported for now */
   "type": "google-cloud-kubernetes",
