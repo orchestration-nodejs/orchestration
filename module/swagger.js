@@ -1,10 +1,11 @@
-var runProcessWithOutput = require('../util/processutil').runProcessWithOutput;
+var runProcessAndCapture = require('../util/processutil').runProcessAndCapture;
 var spawn = require('child_process').spawn;
 var rimraf = require('rimraf');
 var readdir = require('fs').readdir;
 
 function updateServer(callback) {
-  runProcessWithOutput(
+  console.log('updating server');
+  var process = spawn(
     'java',
     [
       '-jar',
@@ -16,9 +17,17 @@ function updateServer(callback) {
       'nodejs-server',
       '-o',
       '.'
-    ],
-    callback
+    ]
   );
+  process.on('exit', (exit) => {
+    if (exit != 0) {
+      console.log('failed to update server');
+      callback(new Error('generate server had non-zero exit code'));
+    } else {
+      console.log('updated server');
+      callback();
+    }
+  });
 };
 
 function generateAllSdks(callback) {
@@ -49,9 +58,12 @@ function generateAllSdks(callback) {
                   ('sdks/'+sdk)
                 ]
               );
-              process.on('exit', (code) =>
-              {
-                console.log('generated sdk - ' + sdk);
+              process.on('exit', (code) => {
+                if (code != 0) { 
+                  console.log('failed to generate sdk - ' + sdk);
+                } else {
+                  console.log('generated sdk - ' + sdk);
+                }
                 waitingOn[filename] = false;
 
                 var stillWaiting = false;

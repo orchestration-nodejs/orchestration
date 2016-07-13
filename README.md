@@ -10,7 +10,6 @@ them together for SDK generation.
 - `node`: Run a test Node.js server for debugging your app.
 - `configuration`: Inspect the configuration of your deployment.
 - `swagger`: Interact with [Swagger](http://swagger.io/), the SDK generator.
-- `versionless`: Generate a versionless copy of `package.json` for inclusion in a Docker container.
 - `kubernetes`: Deploy Docker images onto a Kubernetes cluster.
 
 # Configuration
@@ -117,12 +116,15 @@ gulp.task('generate-versionless', function(callback) {
 
 // e.g. to build a Docker container from the current folder:
 gulp.task('build-docker', ['generate-versionless'], function(callback) {
-  orchestration.docker.build(
-    'my-image-name',
-    orchestration.packaging.getVersion(),
-    'Dockerfile',
-    callback
-  );
+  // targets the 'development' environment
+  orchestration.docker.build(configuration, 'development', callback);
+});
+
+// e.g. to run your Node.js app from within a Docker container:
+gulp.task('test-docker', ['build-docker'], function(callback) {
+  // test in dev with 8080 mapped to 8001
+  // targets the 'development' environment
+  orchestration.docker.testLocal(configuration, 'development', { 8001: 8080 }, callback);
 });
 
 // e.g. to run your Node.js app on your host machine:
@@ -130,23 +132,10 @@ gulp.task('test-host', ['build'], function(callback) {
   orchestration.node.test(callback);
 });
 
-// e.g. to run your Node.js app from within a Docker container:
-gulp.task('test-docker', ['build-docker'], function(callback) {
-  orchestration.docker.testContainer(
-    'my-image-name',
-    orchestration.packaging.getVersion(),
-    { 8001: 8080 }, /* port mappings */
-    callback
-  )
-});
-
 // e.g. to deploy your Node.js app to a Kubernetes cluster in Google Cloud
 gulp.task('deploy-prod', ['push-docker-prod'], function(callback) {
-  orchestration.kubernetes.deployToCluster(
-    config,
-    'production',
-    callback
-  );
+  // targets the 'production' environment
+  orchestration.kubernetes.deployToCluster(config, 'production', callback);
 });
 ```
 
