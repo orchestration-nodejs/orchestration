@@ -16,6 +16,36 @@ function runProcessWithOutput(cmd, args, callback) {
   });
 }
 
+function runProcessWithOutputAndWorkingDirectory(cmd, args, cwd, callback) {
+  var child = spawn(
+    cmd,
+    args,
+    { shell: true, cwd: cwd, stdio: ['ignore', process.stdout, process.stderr] }
+  );
+  child.on('exit', (code) => {
+    if (code != 0) {
+      callback(new Error('Process exited with non-zero exit code.'));
+    } else {
+      callback()
+    }
+  });
+}
+
+function runProcessWithOutputNoShell(cmd, args, callback) {
+  var child = spawn(
+    cmd,
+    args,
+    { shell: false, stdio: ['ignore', process.stdout, process.stderr] }
+  );
+  child.on('exit', (code) => {
+    if (code != 0) {
+      callback(new Error('Process exited with non-zero exit code.'));
+    } else {
+      callback()
+    }
+  });
+}
+
 function runProcessWithOutputAndEnv(cmd, args, envNew, callback) {
   var env = Object.create(process.env);
   for (var name in envNew) {
@@ -82,6 +112,8 @@ function runProcessAndCapture(cmd, args, callback) {
 
 module.exports = {
   runProcessWithOutput: runProcessWithOutput,
+  runProcessWithOutputNoShell: runProcessWithOutputNoShell,
+  runProcessWithOutputAndWorkingDirectory: runProcessWithOutputAndWorkingDirectory,
   runProcessWithOutputAndEnv: runProcessWithOutputAndEnv,
   runProcessWithOutputAndEnvAndInput: runProcessWithOutputAndEnvAndInput,
   runProcessAndCapture: runProcessAndCapture,
