@@ -6,7 +6,9 @@ var fs = require('fs');
 var async = require('async');
 
 var builders = {
+  'android': require('./swagger/builder-android'),
   'csharp': require('./swagger/builder-csharp'),
+  'cpprest': require('./swagger/builder-cpprest'),
   'php': require('./swagger/builder-php')
 }
 

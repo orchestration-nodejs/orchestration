@@ -4,8 +4,6 @@ var async = require('async');
 var copyRecurse = require('../../util/copyutil').copyRecurse;
 
 function pack(generationPath, targetPath, sdkConfig, callback) {
-  var packagePath = sdkConfig.packagePath || "SwaggerClient-php";
-
   fs.mkdir(targetPath, (err) => {
     if (err) {
       callback(err);
@@ -13,11 +11,10 @@ function pack(generationPath, targetPath, sdkConfig, callback) {
     }
 
     copyRecurse(
-      generationPath + '/' + packagePath, 
+      generationPath, 
       targetPath,
       (currentDir, targetDir, filename) => {
         if (filename == 'test' ||
-            filename == '.travis.yml' ||
             filename == '.swagger-codegen-ignore' ||
             filename == 'git_push.sh') {
           return false;
