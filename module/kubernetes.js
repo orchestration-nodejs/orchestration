@@ -29,7 +29,7 @@ function deployToCluster(config, environment, callback) {
       () => {
         service.createServiceForDeployment(
           config.package.name,
-          services[offset].name,
+          services[offset],
           (err) => {
             if (err) {
               onError(err);

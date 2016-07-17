@@ -35,7 +35,7 @@ function createServiceForDeployment(deploymentName, serviceProps, callback) {
   console.log("Creating service for deployment " + deploymentName + "...");
 
   if (serviceProps.type != "LoadBalancer") {
-    callback(new Error("Only services of type 'LoadBalancer' are supported at the moment."));
+    callback(new Error("Only services of type 'LoadBalancer' are supported at the moment (got '" + serviceProps.type + "')."));
     return;
   }
 
