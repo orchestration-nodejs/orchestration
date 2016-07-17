@@ -110,6 +110,25 @@ function runProcessAndCapture(cmd, args, callback) {
   });
 }
 
+function runProcessAndCaptureAndWorkingDirectory(cmd, args, cwd, callback) {
+  var child = spawn(
+    cmd,
+    args,
+    { shell: true, cwd: cwd, stdio: ['ignore', 'pipe', process.stderr] }
+  );
+  var buffer = "";
+  child.stdout.on('data', (data) => {
+    buffer += data;
+  });
+  child.on('close', (code) => {
+    if (code != 0) {
+      callback(buffer, new Error('Process exited with non-zero exit code.'));
+    } else {
+      callback(buffer)
+    }
+  });
+}
+
 module.exports = {
   runProcessWithOutput: runProcessWithOutput,
   runProcessWithOutputNoShell: runProcessWithOutputNoShell,
@@ -117,4 +136,5 @@ module.exports = {
   runProcessWithOutputAndEnv: runProcessWithOutputAndEnv,
   runProcessWithOutputAndEnvAndInput: runProcessWithOutputAndEnvAndInput,
   runProcessAndCapture: runProcessAndCapture,
+  runProcessAndCaptureAndWorkingDirectory: runProcessAndCaptureAndWorkingDirectory,
 };

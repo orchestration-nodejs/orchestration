@@ -95,7 +95,7 @@ function generateSdk(file, callback) {
                     logSdk('packaged', sdk);
                     if (builders[sdk].publishExternal) {
                       logSdk('publishing externally', sdk);
-                      builders[sdk].publishExternal('sdks/_package/' + sdk, sdkConfig, (err) => {
+                      builders[sdk].publishExternal('sdks/' + sdk, 'sdks/_package/' + sdk, sdkConfig, (err) => {
                         if (err) {
                           logSdk('failed to publish externally', sdk);
                         } else {
@@ -139,7 +139,6 @@ function generateSdk(file, callback) {
 }
 
 function generateAllSdks(callback) {
-  var waitingOn = {};
   rimraf('sdks/_package', {}, function(){
     fs.mkdirSync('sdks/_package');
     var files = readdir('sdks', null, function(err, files) {
@@ -148,7 +147,45 @@ function generateAllSdks(callback) {
   });
 }
 
+
+function publishSdk(file, callback) {
+  var sdk = file.substring(0, file.length - 5);
+  var filename = 'sdks/'+file;
+  if (filename.endsWith('.json')) {
+    fs.readFile(filename, (err, data) => {
+      if (err) {
+        callback(err);
+        return;
+      }
+
+      var sdkConfig = JSON.parse(data);
+
+      if (builders[sdk].publishExternal) {
+        logSdk('publishing externally', sdk);
+        builders[sdk].publishExternal('sdks/' + sdk, 'sdks/_package/' + sdk, sdkConfig, (err) => {
+          if (err) {
+            logSdk('failed to publish externally', sdk);
+          } else {
+            logSdk('published externally', sdk);
+          }
+
+          callback(err);
+        });
+      } else {
+        callback();
+      }
+    });
+  }
+}
+
+function publishAllSdks(callback) {
+  var files = readdir('sdks', null, function(err, files) {
+    async.each(files, publishSdk, callback);
+  });
+}
+
 module.exports = {
   updateServer: updateServer,
   generateAllSdks: generateAllSdks,
+  publishAllSdks: publishAllSdks
 };
