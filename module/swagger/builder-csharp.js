@@ -26,7 +26,7 @@ function pack(generationPath, targetPath, sdkConfig, callback) {
           return;
         }
 
-        var config = configuration.getConfiguration(); 
+        var config = configuration.getConfiguration();
     
         var nuspec = `<?xml version="1.0" encoding="utf-8"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
@@ -43,7 +43,7 @@ function pack(generationPath, targetPath, sdkConfig, callback) {
     </dependencies>
   </metadata>
   <files>
-    <file src="` + targetPath + '/' + sdkConfig.packageName + `*.*" target="lib" />
+    <file src="..\\..\\` + targetPath.replace(/\//g, '\\') + '\\' + sdkConfig.packageName + `*.*" target="lib\\net45" />
   </files>
 </package>
 `

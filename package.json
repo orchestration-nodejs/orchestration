@@ -1,6 +1,6 @@
 {
   "name": "orchestration",
-  "version": "0.2.6",
+  "version": "0.2.7",
   "description": "Orchestration is a set of utilities for Gulp that help you combine multiple Node.js microservices together into a versioned deployment.",
   "main": "index.js",
   "scripts": {
