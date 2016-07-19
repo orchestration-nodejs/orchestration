@@ -66,6 +66,11 @@ function createMinimalCluster(project, zone, clusterName, callback) {
 }
 
 function loadAuthenticationCredentials(project, clusterName, zone, callback) {
+  var p = "/";
+  if (/^win/.test(process.platform)) {
+    p = "\\";
+  }
+
   runProcessWithOutputAndEnv(
     'gcloud',
     [
@@ -79,7 +84,7 @@ function loadAuthenticationCredentials(project, clusterName, zone, callback) {
       zone
     ],
     {
-      'HOME': process.cwd()
+      'KUBECONFIG': process.cwd() + p + ".kube" + p + "config"
     },
     callback
   );
