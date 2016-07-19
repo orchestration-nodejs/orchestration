@@ -9,7 +9,20 @@ function build(path, sdkConfig, callback) {
   if (/^win/.test(process.platform)) {
     runProcessWithOutputAndWorkingDirectory("build.bat", [], path, callback);
   } else {
-    runProcessWithOutputAndWorkingDirectory("build.sh", [], path, callback);
+    runProcessWithOutputAndWorkingDirectory("chmod", ["a+x", "build.sh"], path, (err) => {
+      if (err) {
+        callback(err);
+      } else {
+        runProcessWithOutputAndWorkingDirectory("dos2unix", ["build.sh"], path, (err) => {
+          if (err) {
+            callback(err);
+          } else {
+            runProcessWithOutputAndWorkingDirectory("./build.sh", [], path, callback);
+          }
+        });
+      }
+    });
+
   }
 }
 
@@ -27,7 +40,12 @@ function pack(generationPath, targetPath, sdkConfig, callback) {
         }
 
         var config = configuration.getConfiguration();
-    
+
+        var p = "/";
+        if (/^win/.test(process.platform)) {
+          p = "\\";
+        }
+
         var nuspec = `<?xml version="1.0" encoding="utf-8"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
   <metadata>
@@ -43,7 +61,7 @@ function pack(generationPath, targetPath, sdkConfig, callback) {
     </dependencies>
   </metadata>
   <files>
-    <file src="..\\..\\` + targetPath.replace(/\//g, '\\') + '\\' + sdkConfig.packageName + `*.*" target="lib\\net45" />
+    <file src="..` + p + `..` + p + targetPath.replace(/\//g, p) + p + sdkConfig.packageName + `*.*" target="lib\\net45" />
   </files>
 </package>
 `
