@@ -5,6 +5,21 @@ var fse = require('fs-extra');
 var async = require('async');
 var configuration = require('../configuration');
 
+function getNuGetMainProcess() {
+  if (/^win/.test(process.platform)) {
+    return "nuget";
+  } else {
+    return "mono";
+  }
+}
+
+function getNuGetArguments(args) {
+  if (!(/^win/.test(process.platform))) {
+    args.splice(0, 0, "nuget");
+  }
+  return args;
+}
+
 function build(path, sdkConfig, callback) {
   if (/^win/.test(process.platform)) {
     runProcessWithOutputAndWorkingDirectory("build.bat", [], path, callback);
@@ -68,11 +83,11 @@ function pack(generationPath, targetPath, sdkConfig, callback) {
 
         fs.writeFile(generationPath + '/' + sdkConfig.packageName + '.nuspec', nuspec, (err) => {
           runProcessWithOutputAndWorkingDirectory(
-            'nuget',
-            [
+            getNuGetMainProcess(),
+            getNuGetArguments([
               'pack',
               sdkConfig.packageName + '.nuspec'
-            ],
+            ]),
             generationPath,
             callback);
         });
@@ -86,14 +101,14 @@ function publishExternal(generationPath, targetPath, sdkConfig, callback) {
   var config = configuration.getConfiguration(); 
 
   runProcessAndCaptureAndWorkingDirectory(
-    'nuget',
-    [
+    getNuGetMainProcess(),
+    getNuGetArguments([
       'list',
       sdkConfig.packageName,
       '-Source', 
       'https://www.nuget.org/api/v2',
       '-AllVersions'
-    ],
+    ]),
     generationPath,
     (output, err) => {
       if (err) {
@@ -112,13 +127,13 @@ function publishExternal(generationPath, targetPath, sdkConfig, callback) {
 
       if (!found) {
         runProcessWithOutputAndWorkingDirectory(
-          'nuget',
-          [
+          getNuGetMainProcess(),
+          getNuGetArguments([
             'push',
             sdkConfig.packageName + '.' + config.package.version + '.nupkg',
             '-Source', 
             'https://www.nuget.org/api/v2/package'
-          ],
+          ]),
           generationPath,
           callback);
       } else {

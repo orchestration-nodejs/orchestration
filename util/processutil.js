@@ -118,9 +118,7 @@ function runProcessAndCaptureAndWorkingDirectory(cmd, args, cwd, callback) {
   );
   var buffer = "";
   child.stdout.on('data', (data) => {
-    try {
-      buffer += data;
-    } catch (e) {}
+    buffer += data;
   });
   child.on('close', (code) => {
     if (code != 0) {
