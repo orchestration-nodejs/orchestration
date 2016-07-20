@@ -4,6 +4,9 @@ var fs = require('fs');
 var fse = require('fs-extra');
 var async = require('async');
 var configuration = require('../configuration');
+var requestify = require('requestify');
+var xpath = require('xpath');
+var dom = require('xmldom').DOMParser;
 
 function getNuGetMainProcess() {
   if (/^win/.test(process.platform)) {
@@ -100,32 +103,29 @@ function publishExternal(generationPath, targetPath, sdkConfig, callback) {
   // TODO Have config passed in.
   var config = configuration.getConfiguration(); 
 
-  runProcessAndCaptureAndWorkingDirectory(
-    getNuGetMainProcess(),
-    getNuGetArguments([
-      'list',
-      sdkConfig.packageName,
-      '-Source', 
-      'https://www.nuget.org/api/v2',
-      '-AllVersions'
-    ]),
-    generationPath,
-    (output, err) => {
-      if (err) {
-        callback(err);
-        return;
-      }
-
-      var lines = output.split("\n");
-      var found = false;
-      for (var i = 0; i < lines.length; i++) {
-        if (lines[i].trim() == sdkConfig.packageName + " " + config.package.version) {
-          found = true;
-          break;
+  requestify.get("https://www.nuget.org/api/v2/Search()?$orderby=Id&$skip=0&$top=30&searchTerm='" + sdkConfig.packageName + "'&targetFramework=''&includePrerelease=false")
+    .then((resp) => {
+      var body = resp.body;
+      var doc = new dom().parseFromString(body);
+      var select = xpath.useNamespaces({
+        "a": "http://www.w3.org/2005/Atom",
+        "d": "http://schemas.microsoft.com/ado/2007/08/dataservices",
+        "georss": "http://www.georss.org/georss",
+        "gml": "http://www.opengis.net/gml",
+        "m": "http://schemas.microsoft.com/ado/2007/08/dataservices/metadata"
+      });
+      var nodes = select("//a:entry", doc);
+      var versionExists = false;
+      for (var i = 0; i < nodes.length; i++) {
+        var id = select("m:properties/d:Id", nodes[i])[0].firstChild.data;
+        var version = select("m:properties/d:Version", nodes[i])[0].firstChild.data;
+        if (id == sdkConfig.packageName && version == config.package.version) {
+          versionExists = true;
         }
       }
 
-      if (!found) {
+      if (!versionExists) {
+        console.log('pushing new version...');
         runProcessWithOutputAndWorkingDirectory(
           getNuGetMainProcess(),
           getNuGetArguments([
