@@ -18,7 +18,7 @@ function getNuGetMainProcess() {
 
 function getNuGetArguments(args) {
   if (!(/^win/.test(process.platform))) {
-    args.splice(0, 0, "nuget");
+    args.splice(0, 0, "nuget.exe");
   }
   return args;
 }
