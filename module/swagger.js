@@ -33,8 +33,23 @@ function updateServer(callback) {
       console.log('failed to update server');
       callback(new Error('generate server had non-zero exit code'));
     } else {
-      console.log('updated server');
-      callback();
+      fs.readFile('api/swagger.yaml', 'utf8', (err, content) => {
+        if (err){ 
+          console.log('failed to update server');
+          callback(err);
+        }
+
+        content = content.replace(/securityRequirement\:/, "security:");
+        fs.writeFile('api/swagger.yaml', content, (err) => {
+          if (err){ 
+            console.log('failed to update server');
+            callback(err);
+          }
+
+          console.log('updated server');
+          callback();
+        })
+      })
     }
   });
 };
