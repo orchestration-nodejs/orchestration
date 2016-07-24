@@ -49,22 +49,28 @@ function pack(generationPath, targetPath, sdkConfig, callback) {
     if (err) {
       callback(err);
     } else {
-      async.each(files, (filename, cb) => {
-        fse.copy(generationPath + '/bin/' + filename, targetPath + '/' + filename, cb);
-      }, (err) => {
+      fse.copy(generationPath + '/nuget.exe', targetPath + '/nuget.exe', (err) => {
         if (err) {
           callback(err);
           return;
         }
+        
+        async.each(files, (filename, cb) => {
+          fse.copy(generationPath + '/bin/' + filename, targetPath + '/' + filename, cb);
+        }, (err) => {
+          if (err) {
+            callback(err);
+            return;
+          }
 
-        var config = configuration.getConfiguration();
+          var config = configuration.getConfiguration();
 
-        var p = "/";
-        if (/^win/.test(process.platform)) {
-          p = "\\";
-        }
+          var p = "/";
+          if (/^win/.test(process.platform)) {
+            p = "\\";
+          }
 
-        var nuspec = `<?xml version="1.0" encoding="utf-8"?>
+          var nuspec = `<?xml version="1.0" encoding="utf-8"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
   <metadata>
     <id>` + sdkConfig.packageName + `</id>
@@ -79,20 +85,21 @@ function pack(generationPath, targetPath, sdkConfig, callback) {
     </dependencies>
   </metadata>
   <files>
-    <file src="..` + p + `..` + p + targetPath.replace(/\//g, p) + p + sdkConfig.packageName + `*.*" target="lib\\net45" />
+    <file src="` + sdkConfig.packageName + `*.*" target="lib\\net45" />
   </files>
 </package>
 `
 
-        fs.writeFile(generationPath + '/' + sdkConfig.packageName + '.nuspec', nuspec, (err) => {
-          runProcessWithOutputAndWorkingDirectory(
-            getNuGetMainProcess(),
-            getNuGetArguments([
-              'pack',
-              sdkConfig.packageName + '.nuspec'
-            ]),
-            generationPath,
-            callback);
+          fs.writeFile(targetPath + '/' + sdkConfig.packageName + '.nuspec', nuspec, (err) => {
+            runProcessWithOutputAndWorkingDirectory(
+              getNuGetMainProcess(),
+              getNuGetArguments([
+                'pack',
+                sdkConfig.packageName + '.nuspec'
+              ]),
+              targetPath,
+              callback);
+          });
         });
       });
     }
@@ -134,7 +141,7 @@ function publishExternal(generationPath, targetPath, sdkConfig, callback) {
             '-Source', 
             'https://www.nuget.org/api/v2/package'
           ]),
-          generationPath,
+          targetPath,
           callback);
       } else {
         console.log('not republishing to nuget - this version is alredy published!')
