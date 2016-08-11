@@ -3,13 +3,28 @@ var spawn = require('child_process').spawn;
 var fs = require('fs');
 
 function getDockerfile(config, environment) {
-  var dockerfile = `
+  if (config.orchestration.packageType == null || config.orchestration.packageType == 'nodejs') {
+    var dockerfile = `
 FROM node:latest
 WORKDIR /srv
 ADD package.json.versionless /srv/package.json
 RUN npm install
 ADD package.json /srv/package.json
 `;
+  } else if (config.orchestration.packageType == 'custom') {
+    var dockerfile = `
+FROM ` + config.orchestration.packageBase + `
+WORKDIR /srv
+`;
+  } else {
+    throw 'Unknown or not supported package type: ' + config.orchestration.packageType + '.'
+  }
+
+  if (config.orchestration.packageType == 'custom' && config.orchestration.packagePreCommands != null) {
+    for (var i = 0; i < config.orchestration.packagePreCommands.length; i++) {
+      dockerfile += "RUN " + config.orchestration.packagePreCommands[i] + "\n";
+    }
+  }
 
   for (var i = 0; i < config.orchestration.files.length; i++) {
     var value = config.orchestration.files[i];
@@ -28,7 +43,17 @@ ADD package.json /srv/package.json
     dockerfile += "EXPOSE " + value.containerPort + "\n";
   }
 
-  dockerfile += "CMD NODE_ENV=" + environment + " node " + config.package.main;
+  if (config.orchestration.packageType == 'custom' && config.orchestration.packagePostCommands != null) {
+    for (var i = 0; i < config.orchestration.packagePostCommands.length; i++) {
+      dockerfile += "RUN " + config.orchestration.packagePostCommands[i] + "\n";
+    }
+  }
+
+  if (config.orchestration.packageType == null || config.orchestration.packageType == 'nodejs') {
+    dockerfile += "CMD NODE_ENV=" + environment + " node " + config.package.main;
+  } else if (config.orchestration.packageType == 'custom') {
+    dockerfile += "CMD " + config.orchestration.packageEnvironmentVariable + "=" + environment + " " + config.orchestration.packageRun;
+  }
 
   return dockerfile;
 }
