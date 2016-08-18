@@ -6,9 +6,26 @@ function getDockerfile(config, environment) {
   if (config.orchestration.packageType == null || config.orchestration.packageType == 'nodejs') {
     var dockerfile = `
 FROM node:latest
-WORKDIR /srv
+WORKDIR /srv`
+    if (config.orchestration.privateRepoKey != null) {
+      dockerfile += `
+ADD ` + config.orchestration.privateRepoKey + ` /root/.ssh/id_rsa
+RUN chmod 0600 /root/.ssh/id_rsa`
+    }
+    if (config.orchestration.privateRepoHosts != null) {
+      for (var i = 0; i < config.orchestration.privateRepoHosts.length; i++) {
+        dockerfile += `
+RUN bash -c 'ssh-keyscan -H ` + config.orchestration.privateRepoHosts[i] + ` >> ~/.ssh/known_hosts'`
+      }
+    }
+    dockerfile += `
 ADD package.json.versionless /srv/package.json
-RUN npm install
+RUN npm install`
+    if (config.orchestration.privateRepoKey != null) {
+      dockerfile += `
+RUN rm /root/.ssh/id_rsa`
+    }
+    dockerfile += `
 ADD package.json /srv/package.json
 `;
   } else if (config.orchestration.packageType == 'custom') {
