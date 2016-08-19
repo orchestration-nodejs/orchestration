@@ -47,10 +47,23 @@ function runProcessWithOutputNoShell(cmd, args, callback) {
 }
 
 function runProcessWithOutputAndEnv(cmd, args, envNew, callback) {
-  var env = Object.create(process.env);
+  var env = {};
+  for (var name in process.env) {
+    if (process.env.hasOwnProperty(name)) {
+      if (process.platform == 'win32') {
+        env[name.toUpperCase()] = process.env[name];
+      } else {
+        env[name] = process.env[name];
+      }
+    }
+  }
   for (var name in envNew) {
     if (envNew.hasOwnProperty(name)) {
-      env[name] = envNew[name];
+      if (process.platform == 'win32') {
+        env[name.toUpperCase()] = envNew[name];
+      } else {
+        env[name] = envNew[name];
+      }
     }
   }
   var child = spawn(
@@ -68,10 +81,23 @@ function runProcessWithOutputAndEnv(cmd, args, envNew, callback) {
 }
 
 function runProcessWithOutputAndEnvAndInput(cmd, args, envNew, input, callback) {
-  var env = Object.create(process.env);
+  var env = {};
+  for (var name in process.env) {
+    if (process.env.hasOwnProperty(name)) {
+      if (process.platform == 'win32') {
+        env[name.toUpperCase()] = process.env[name];
+      } else {
+        env[name] = process.env[name];
+      }
+    }
+  }
   for (var name in envNew) {
     if (envNew.hasOwnProperty(name)) {
-      env[name] = envNew[name];
+      if (process.platform == 'win32') {
+        env[name.toUpperCase()] = envNew[name];
+      } else {
+        env[name] = envNew[name];
+      }
     }
   }
   var child = spawn(
