@@ -2,7 +2,14 @@ var runProcessAndCapture = require('../../util/processutil').runProcessAndCaptur
 var runProcessWithOutputAndEnvAndInput = require('../../util/processutil').runProcessWithOutputAndEnvAndInput;
 var process = require('process');
 
-function getDeploymentDocument(deploymentName, image, version) {
+function getDeploymentDocument(deploymentName, image, version, containerPorts) {
+  var containerPortsBuilt = [];
+  for (var i = 0; i < containerPorts.length; i++) {
+    containerPortsBuilt.push({
+      "containerPort": containerPorts[i]
+    });
+  }
+
   return {
     "apiVersion": "extensions/v1beta1",
     "kind": "Deployment",
@@ -22,12 +29,7 @@ function getDeploymentDocument(deploymentName, image, version) {
             {
               "name": deploymentName,
               "image": image + ":" + version,
-              "ports": [
-                {
-                  // TODO
-                  "containerPort": 8080
-                }
-              ],
+              "ports": containerPortsBuilt,
               "resources": {
                 "requests": {
                   "cpu": 0
@@ -70,7 +72,7 @@ function ifDeploymentExists(deploymentName, onExistsCallback, onNotExistsCallbac
   )
 }
 
-function createDeployment(deploymentName, image, version, callback) {
+function createDeployment(deploymentName, image, version, containerPorts, callback) {
   console.log("Creating Kubernetes deployment for container...");
   runProcessWithOutputAndEnvAndInput(
     'kubectl',
@@ -83,12 +85,12 @@ function createDeployment(deploymentName, image, version, callback) {
     {
       'HOME': process.cwd()
     },
-    JSON.stringify(getDeploymentDocument(deploymentName, image, version)),
+    JSON.stringify(getDeploymentDocument(deploymentName, image, version, containerPorts)),
     callback
   );
 }
 
-function replaceDeployment(deploymentName, image, version, callback) {
+function replaceDeployment(deploymentName, image, version, containerPorts, callback) {
   console.log("Updating Kubernetes deployment with new version...");
   runProcessWithOutputAndEnvAndInput(
     'kubectl',
@@ -103,7 +105,7 @@ function replaceDeployment(deploymentName, image, version, callback) {
     {
       'HOME': process.cwd()
     },
-    JSON.stringify(getDeploymentDocument(deploymentName, image, version)),
+    JSON.stringify(getDeploymentDocument(deploymentName, image, version, containerPorts)),
     callback
   );
 }

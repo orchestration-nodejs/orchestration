@@ -57,6 +57,15 @@ function deployToCluster(config, environment, callback) {
 
     var dockerPrefix = config.cluster.environments[environment].dockerImagePrefix;
 
+    var services = config.orchestration.services[environment];
+    var containerPorts = [];
+    for (var i = 0; i < services.length; i++) {
+      var containerPort = services[i].containerPort;
+      if (containerPort != null) {
+        containerPorts.push(containerPort);
+      }
+    }
+
     cluster.loadAuthenticationCredentials(
       config.cluster.environments[environment].project, 
       config.cluster.environments[environment].clusterName, 
@@ -70,6 +79,7 @@ function deployToCluster(config, environment, callback) {
               config.package.name, 
               dockerPrefix + config.package.name,
               config.package.version,
+              containerPorts,
               deployServices);
           },
           () => {
@@ -77,6 +87,7 @@ function deployToCluster(config, environment, callback) {
               config.package.name, 
               dockerPrefix + config.package.name,
               config.package.version,
+              containerPorts,
               deployServices);
           },
           callback);
