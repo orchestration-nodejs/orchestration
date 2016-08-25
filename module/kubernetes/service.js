@@ -34,29 +34,81 @@ function ifServiceExists(serviceName, onExistsCallback, onNotExistsCallback, onE
 function createServiceForDeployment(deploymentName, serviceProps, callback) {
   console.log("Creating service for deployment " + deploymentName + "...");
 
-  if (serviceProps.type != "LoadBalancer") {
-    callback(new Error("Only services of type 'LoadBalancer' are supported at the moment (got '" + serviceProps.type + "')."));
-    return;
+  if (serviceProps.type == 'LoadBalancer') {
+    runProcessWithOutputAndEnv(
+      'kubectl',
+      [
+        'expose',
+        'deployment',
+        deploymentName,
+        '--port='+serviceProps.publicPort,
+        '--target-port='+serviceProps.containerPort,
+        '--type='+serviceProps.type,
+        '--protocol='+serviceProps.protocol,
+        '--load-balancer-ip='+serviceProps.ipAddress,
+        '--name='+serviceProps.name
+      ],
+      {
+        'HOME': process.cwd()
+      },
+      callback
+    );
+  } else if (serviceProps.type == 'NodePort') {
+    if (serviceProps.publicPort != null) {
+      runProcessWithOutputAndEnv(
+        'kubectl',
+        [
+          'expose',
+          'deployment',
+          deploymentName,
+          '--port='+serviceProps.publicPort,
+          '--target-port='+serviceProps.containerPort,
+          '--type='+serviceProps.type,
+          '--protocol='+serviceProps.protocol,
+          '--name='+serviceProps.name
+        ],
+        {
+          'HOME': process.cwd()
+        },
+        callback
+      );
+    } else {
+      runProcessWithOutputAndEnv(
+        'kubectl',
+        [
+          'expose',
+          'deployment',
+          deploymentName,
+          '--target-port='+serviceProps.containerPort,
+          '--type='+serviceProps.type,
+          '--protocol='+serviceProps.protocol,
+          '--name='+serviceProps.name
+        ],
+        {
+          'HOME': process.cwd()
+        },
+        callback
+      );
+    }
+  } else if (serviceProps.type == 'ClusterIP') {
+    runProcessWithOutputAndEnv(
+      'kubectl',
+      [
+        'expose',
+        'deployment',
+        deploymentName,
+        '--port='+serviceProps.publicPort,
+        '--target-port='+serviceProps.containerPort,
+        '--type='+serviceProps.type,
+        '--protocol='+serviceProps.protocol,
+        '--name='+serviceProps.name
+      ],
+      {
+        'HOME': process.cwd()
+      },
+      callback
+    );
   }
-
-  runProcessWithOutputAndEnv(
-    'kubectl',
-    [
-      'expose',
-      'deployment',
-      deploymentName,
-      '--port='+serviceProps.publicPort,
-      '--target-port='+serviceProps.containerPort,
-      '--type='+serviceProps.type,
-      '--protocol='+serviceProps.protocol,
-      '--load-balancer-ip='+serviceProps.ipAddress,
-      '--name='+serviceProps.name
-    ],
-    {
-      'HOME': process.cwd()
-    },
-    callback
-  );
 }
 
 module.exports = {
