@@ -1,7 +1,7 @@
 module.exports = {
-  swagger: require("./module/swagger"),
-  docker: require("./module/docker"),
-  node: require("./module/node"),
-  kubernetes: require("./module/kubernetes"),
-  configuration: require("./module/configuration"),
+  swagger: require("orchestration-swagger"),
+  docker: require("orchestration-docker"),
+  node: require("orchestration-node"),
+  kubernetes: require("orchestration-kubernetes"),
+  configuration: require("orchestration-configuration"),
 };
